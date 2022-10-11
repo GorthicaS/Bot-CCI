@@ -1,100 +1,44 @@
-const Discord = require("discord.js");
+const discord = require("discord.js");
 
 const ytdl = require("ytdl-core");
 
-const Client = new Discord.Client; 
+// const Client = new Discord.Client; 
+
+// { Client, Intents } = require('discord.js');
+
+const Client = new discord.Client({ intents: 65535 })
 
 const prefix = "$";
 
 var list = [];
 
 Client.on("ready", () => {
-    console.log("bot fonctione ");
+    console.log("bot fonctione");
 });
-
-Client.on("message", async message => { 
-    if(message.content === prefix +"playlist"){
-        let msg = "**FILE D'ATTENTE !**\n";
-        for(var i = 0;i < list.lenght;i++){
-            let name;
-            await ytdl.getInfo(list[i], (err, info) => {
-                if(err){
-                    console.log("erreur de lien : " + err);
-                    list.splice(i, 1);
-                }
-                else {
-                    name = info.title;
-                }
-            });
-            msg += "> " + i + " - " + name + "\n" ;
+Client.on("raw",(v)=>{
+    if(v.t=="MESSAGE_CREATE"){
+        var message=v.d
+        var channel=message.channel_id
+        var guild=message.guild_id
+        var msg=message.content.toUpperCase()
+        //console.log(msg) 
+        // if(msg==""){}                // Se message = OBLIGATOIREMENT de ce qu'il y a entre les guillemets
+        // if(msg.startsWith("")){}     // Se message commence OBLIGATOIREMENT avec ce qu'il y a entre les guillemets
+        if(msg.startsWith("SALUT")){
+            Client.channels.fetch(channel).then(temp=>{
+                temp.send("Tu vas bien ?\nPrêt a coder ?!?\nLET'S GO !!!")
+            })
         }
-        message.channel.send(msg);
+        if(msg.startsWith(prefix+"PLAY")){
+            // TODO: fonction pour la musique a écrire
+        }
+
+        /* a paufiné
+        if(msg.includes("TENOR")){
+            Client.channels.fetch(channel).then(temp=>{
+                temp.send("Stop avec t'es putin de GIF")
+            }) 
+        } //*/
     }
-    else if(message.content.startsWith(prefix + "play")){
-        if(message.member.voice.channel){  
-            let args = message.content.split(" ");
-
-            if(args[1] == undefined || !args[1].startsWith("https://www.youtube.com/watch?v=")){
-                 message.reply("ton lien marche pas");
-            }
-            else {
-                if(list.length > 0){
-                    list.push(args[1]);
-                    const newLocal = "); ";
-                    message.reply("Je peux pas car je pue la merde.")
-}
-                    message.member.voice.channel.join().then(connection => {
-                        playMusic(connection);
-
-                        connection.on("disconnect", () => {
-                            list = [];                       
-                        });
-
-                    }).catch(err => {
-                        message.replay("Erreur lors de la connexion : " + err);
-                    })
-                
-            }
-        }
-    }                                          
-});
-
-function playMusic(connection){
-    let dispatcher = connection.play(ytdl(list[0], { quality: "highestaudio"}));
-
-    dispatcher.on("finish", () => {
-        list.shift();
-        dispatcher.destroy();
-
-        if(list.length > 0){
-            playMusic(connection);
-        }
-        else {
-            connection.disconnect();
-        }
-    });
-
-    dispatcher.on("error", err => {
-        console.log("erreur de dispatcher : " + err);
-        dispatcher.destroy();
-        connection.disconnect();
-
-    });
-
-    bot.on('message', async message => {
-        if (message.author.bot) return;
-        if (message.content.toLowerCase().includes('salut')){
-          message.channel.send(`Salut ${user}, tu vas bien?`);
-        }
-      });
-       
-      bot.on('message', async message => {
-        if (message.author.bot) return;
-        if (message.content === "Comme un lundi"){ 
-            message.channel.send(`MDR, toujours aussi décalé le ${user}`);
-          }  
-      });   
-}
-
-
-Client.login("OTM4ODk2MzczNDY4NzYyMTEy.Yfw9Yw.p5qeOo77OIlg7aB1jAzottBRNUI");
+})
+Client.login("YOUR TOKEN");
